@@ -11,8 +11,9 @@ const MOVE_RIGHT = {"top" : ROTATE_RIGHT, "bottom" : ROTATE_LEFT, "right" : ADVA
 const MOVE_LEFT = {"top" : ROTATE_LEFT, "bottom" : ROTATE_RIGHT, "right" : ROTATE_RIGHT,"left" : ADVANCE };
 
 module.exports = function (context, req) {
+    this.context = context;
     context.log('JavaScript HTTP trigger function processed a request.');
-    let response = action(req);    
+    let response = action(req);
     context.res = {
         headers: {"Content-Type": 'application/json'},
         body: response
@@ -22,9 +23,13 @@ module.exports = function (context, req) {
 
 function action(req) {
     if (req.params.query == "command") {
-        return getCommand(req.body);
+        this.body = req.body;
+        this.context.log('Return command.');
+        this.context.log(this.body);
+        return getCommand();
     } else if (req.params.query == "info") {
-        return getInfo();
+        this.context.log('Return info.')
+        return returnObject = getInfo();
     }
     return {};
 }
@@ -36,55 +41,57 @@ function getInfo() {
     return {name: penguinName, team: teamName};
 }
 
-function getCommand(body) {
-    const response = PASS;
-    response = moveTowardsCenterOfMap(body);
+function getCommand() {
+    const response = moveTowardsCenterOfMap();
     return { command: response};
 }
 
-function moveTowardsCenterOfMap(body) {
-    const centerPointX = Math.floor((body.mapWidth)/2);
-    const centerPointY = Math.floor((body.mapHeight)/2);
-    return moveTowardsPoint(body, centerPointX, centerPointY);
+function moveTowardsCenterOfMap() {
+    const centerPointX = Math.floor((this.body.mapWidth)/2);
+    const centerPointY = Math.floor((this.body.mapHeight)/2);
+
+    return moveTowardsPoint(centerPointX, centerPointY);
 }
 
-function moveTowardsPoint(body, pointX, pointY) {
-    const penguinPositionX = body.you.x;
-    const penguinPositionY = body.you.y;
+function moveTowardsPoint(pointX, pointY) {
+    const penguinPositionX = this.body.you.x;
+    const penguinPositionY = this.body.you.y;
+    const direction = this.body.you.direction;
+
     let plannedAction = PASS;
     
     if (penguinPositionX < pointX) {
-        plannedAction =  MOVE_RIGHT[body.you.direction];
+        plannedAction =  MOVE_RIGHT[direction];
     } else if (penguinPositionX > pointX) {
-        plannedAction = MOVE_LEFT[body.you.direction];
+        plannedAction = MOVE_LEFT[direction];
     } else if (penguinPositionY < pointY) {
-        plannedAction = MOVE_DOWN[body.you.direction];
+        plannedAction = MOVE_DOWN[direction];
     } else if (penguinPositionY > pointY) {
-        plannedAction = MOVE_UP[body.you.direction];
+        plannedAction = MOVE_UP[direction];
     }
-    if (plannedAction === ADVANCE && wallInFrontOfPenguin(body)) {
-        return SHOOT;
+
+    if (plannedAction === ADVANCE && wallInFrontOfPenguin()) {
+        plannedAction = SHOOT;
     }
     return plannedAction
 }
 
-function doesCellContainWall(walls, x, y) {
-    if (walls.find(wall => wall.x == x && wall.y == y)) {
-        return true;
-    }
-    return false;
+function doesCellContainWall(x, y) {
+    return this.body.walls.some(wall => wall.x == x && wall.y == y);
 }
 
-function wallInFrontOfPenguin(body) {
-    switch(body.you.direction) {
+function wallInFrontOfPenguin() {
+    const you = this.body.you;
+
+    switch(this.body.you.direction) {
         case "top":
-            return doesCellContainWall(body.walls, body.you.x, --body.you.y);
+            return doesCellContainWall(you.x, --you.y);
         case "bottom":
-            return doesCellContainWall(body.walls, body.you.x, ++body.you.y);
+            return doesCellContainWall(you.x, ++you.y);
         case "left":
-            return doesCellContainWall(body.walls, --body.you.x, body.you.y);
+            return doesCellContainWall(--you.x, you.y);
         case "right":
-            return doesCellContainWall(body.walls, ++body.you.x, body.you.y);
+            return doesCellContainWall(++you.x, you.y);
         default:
             return true;
     }

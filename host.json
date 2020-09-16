@@ -1,6 +1,7 @@
 {
   "version": "2.0",
   "logging": {
+    "fileLoggingMode": "never",
     "applicationInsights": {
       "samplingSettings": {
         "isEnabled": false,
