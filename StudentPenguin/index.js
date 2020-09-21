@@ -22,16 +22,17 @@ module.exports = function (context, req) {
 };
 
 function action(req) {
+    let response = {};
     if (req.params.query == "command") {
         this.body = req.body;
         this.context.log('Return command.');
         this.context.log(this.body);
-        return getCommand();
+        response = !!this.body ? getCommand() : {};
     } else if (req.params.query == "info") {
         this.context.log('Return info.')
-        return returnObject = getInfo();
+        response = getInfo();
     }
-    return {};
+    return response;
 }
 
 function getInfo() {
