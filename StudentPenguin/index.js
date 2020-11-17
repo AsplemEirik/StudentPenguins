@@ -78,7 +78,7 @@ function moveTowardsPoint(pointX, pointY) {
 }
 
 function doesCellContainWall(x, y) {
-    this.body.walls.some((wall) => wall.x == x && wall.y == y);
+    return this.body.walls.some((wall) => wall.x == x && wall.y == y);
 }
 
 function wallInFrontOfPenguin() {
