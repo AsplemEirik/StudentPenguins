@@ -26,7 +26,7 @@ function action(req) {
     if (req.params.query == 'command') {
         this.body = req.body;
         this.context.log('Return command.');
-        this.context.log(this.body);
+        this.context.log(this.body); // Remove if slow.
         response = !!this.body ? getCommand() : {};
     } else if (req.params.query == 'info') {
         this.context.log('Return info.');
